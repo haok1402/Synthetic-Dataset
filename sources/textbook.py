@@ -56,7 +56,7 @@ def main():
             continue
 
         finalPath = Path(store, path.name)
-        indexPath = Path(store, path.stem + ".sha256")
+        indexPath = Path(store, path.name + ".sha256")
         if finalPath.exists() and indexPath.exists():
             finalHash = hash_file(finalPath)
             indexHash = indexPath.read_text().strip()
@@ -64,8 +64,8 @@ def main():
                 logging.info(f"Skipping {path} as it is already up-to-date.")
                 continue
 
-        prompts = list()
         logging.info(f"Reading the corpus from {path}.")
+        prompts = list()
         with path.open("r") as fp:
             for line in fp:
                 data = json.loads(line)
@@ -81,7 +81,7 @@ def main():
                 line = json.dumps({"text": text})
                 fp.write(line + "\n")
 
-        logging.info(f"Saving the index into {indexPath}.")
+        logging.info(f"Saving the sha256 into {indexPath}.")
         indexHash = hash_file(finalPath)
         with indexPath.open("w") as fp:
             fp.write(indexHash)
