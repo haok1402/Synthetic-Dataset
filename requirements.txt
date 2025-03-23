@@ -1,0 +1,4 @@
+vllm
+
+--extra-index-url https://flashinfer.ai/whl/cu124/torch2.5
+flashinfer-python==0.2.2
