@@ -12,7 +12,9 @@ import logging
 from typing import List
 from pathlib import Path
 from vllm import SamplingParams
+
 from sources import parsed, engine
+from sources.utilities import hash_file
 
 
 sampling_params = SamplingParams(
@@ -34,8 +36,7 @@ Write an extensive and detailed course unit suitable for a textbook targeted at 
 Do not include a title or an introduction, simply write the content without headlines and introductory phrases. Do not use images."""
 
 
-def transform(corpus: List[str]) -> List[str]:
-    prompts = [prompt_template.format(text=text) for text in corpus]
+def transform(prompts: List[str]) -> List[str]:
     outputs = engine.generate(prompts, sampling_params)
     return [item.outputs[0].text for item in outputs]
 
@@ -49,26 +50,41 @@ def main():
     for i, path in enumerate(files):
         if path.suffix != ".jsonl":
             raise NotImplementedError("Only 'jsonl' files are allowed.")
+
         if i % parsed.task_count != parsed.task_id:
+            logging.info(f"Skipping {path} as it is not my responsibility.")
             continue
 
-        corpus = list()
+        finalPath = Path(store, path.name)
+        indexPath = Path(store, path.stem + ".sha256")
+        if finalPath.exists() and indexPath.exists():
+            finalHash = hash_file(finalPath)
+            indexHash = indexPath.read_text().strip()
+            if finalHash == indexHash:
+                logging.info(f"Skipping {path} as it is already up-to-date.")
+                continue
+
+        prompts = list()
         logging.info(f"Reading the corpus from {path}.")
         with path.open("r") as fp:
             for line in fp:
                 data = json.loads(line)
                 text = prompt_template.format(text=data["text"])
-                corpus.append(text)
+                prompts.append(text)
 
         logging.info("Transforming the corpus into academic, textbook style.")
-        corpus = transform(corpus)
+        outputs = transform(prompts)
 
-        path = Path(store, path.name)
-        logging.info(f"Saving the corpus into {path}.")
-        with path.open("w") as fp:
-            for text in corpus:
+        logging.info(f"Saving the corpus into {finalPath}.")
+        with finalPath.open("w") as fp:
+            for text in outputs:
                 line = json.dumps({"text": text})
-                fp.write(data + "\n")
+                fp.write(line + "\n")
+
+        logging.info(f"Saving the index into {indexPath}.")
+        indexHash = hash_file(finalPath)
+        with indexPath.open("w") as fp:
+            fp.write(indexHash)
 
 
 if __name__ == '__main__':

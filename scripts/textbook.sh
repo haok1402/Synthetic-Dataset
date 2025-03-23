@@ -7,6 +7,7 @@
 #SBATCH --job-name=textbook
 #SBATCH --output=logs/textbook-%A/task-%a.log
 #SBATCH --array=0-49
+#SBATCH --requeue
 
 #SBATCH --mem=64GB
 #SBATCH --cpus-per-task=32
