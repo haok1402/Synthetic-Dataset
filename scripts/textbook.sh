@@ -10,7 +10,7 @@
 #SBATCH --time=2-00:00:00
 #SBATCH --requeue
 
-#SBATCH --array=0-3
+#SBATCH --array=0-49
 
 #SBATCH --ntasks=2
 #SBATCH --cpus-per-task=32
@@ -22,4 +22,4 @@ source devconfig.sh
 source devsecret.env
 
 # Dispatch each task.
-srun scripts/modules/textbook_step1.sh
+srun -W 0 scripts/modules/textbook_step1.sh
