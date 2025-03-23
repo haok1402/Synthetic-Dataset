@@ -1,6 +1,6 @@
 #!/bin/bash
-# This script extracts token processing speeds from log files and calculates the median input and output token rates.
-# It was generated with the assistance of GPT-4.
+# This script extracts token processing speeds from log files and calculates the average input and output token rates.
+# This script was generated with the assistance of GPT-4.
 
 # Ensure a log directory is provided
 if [[ -z "$1" ]]; then
@@ -26,8 +26,8 @@ for file in "$log_dir"/*.log; do
     done < "$file"
 done
 
-# Function to calculate median
-calculate_median() {
+# Function to calculate average
+calculate_average() {
     local -a arr=("$@")
     local len=${#arr[@]}
 
@@ -36,20 +36,13 @@ calculate_median() {
         return
     fi
 
-    # Sort array and calculate median
-    sorted=($(printf "%s\n" "${arr[@]}" | sort -n))
-    local mid=$((len / 2))
-
-    if (( len % 2 == 1 )); then
-        echo "${sorted[mid]}"
-    else
-        echo "$(awk "BEGIN {print (${sorted[mid-1]} + ${sorted[mid]}) / 2}")"
-    fi
+    awk '{sum += $1} END {print sum / NR}' <<< "$(printf "%s\n" "${arr[@]}")"
 }
 
-# Compute and display median values
-median_input=$(calculate_median "${input_speeds[@]}")
-median_output=$(calculate_median "${output_speeds[@]}")
+# Compute average values
+average_input=$(calculate_average "${input_speeds[@]}")
+average_output=$(calculate_average "${output_speeds[@]}")
 
-echo "Median input token speed: $median_input toks/s"
-echo "Median output token speed: $median_output toks/s"
+# Display results
+echo "Average input token speed: $average_input toks/s"
+echo "Average output token speed: $average_output toks/s"
