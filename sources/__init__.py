@@ -1,4 +1,6 @@
 """
+Initialize the pipeline for synthetic data generation.
+
 Author: Hao Kang
 Date: March 22, 2025
 """
@@ -34,4 +36,4 @@ def load_engine():
     """
     return LLM(parsed.model)
 
-engine = load_engine(parsed.model)
+engine = load_engine()
