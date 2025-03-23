@@ -12,7 +12,7 @@ import logging
 from typing import List
 from pathlib import Path
 from vllm import SamplingParams
-from sources import parsed, llm
+from sources import parsed, engine
 
 
 sampling_params = SamplingParams(
@@ -36,7 +36,7 @@ Do not include a title or an introduction, simply write the content without head
 
 def transform(corpus: List[str]) -> List[str]:
     prompts = [prompt_template.format(text=text) for text in corpus]
-    outputs = llm.generate(prompts, sampling_params)
+    outputs = engine.generate(prompts, sampling_params)
     return [item.outputs[0].text for item in outputs]
 
 
@@ -60,7 +60,7 @@ def main():
                 text = prompt_template.format(text=data["text"])
                 corpus.append(text)
 
-        logging.info("Transforming the corpus.")
+        logging.info("Transforming the corpus into academic, textbook style.")
         corpus = transform(corpus)
 
         path = Path(store, path.name)
