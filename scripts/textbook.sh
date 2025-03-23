@@ -12,7 +12,7 @@
 #SBATCH --requeue
 
 #SBATCH --ntasks=2
-#SBATCH --cpus-per-task=32
+#SBATCH --cpus-per-task=24
 #SBATCH --gres=gpu:2
 #SBATCH --mem-per-gpu=64GB
 
