@@ -7,7 +7,7 @@
 #SBATCH --job-name=textbook
 #SBATCH --output=logs/textbook-%A/task-%a.log
 
-#SBATCH --array=0-49
+#SBATCH --array=0-49%16
 #SBATCH --time=2-00:00:00
 #SBATCH --requeue
 
