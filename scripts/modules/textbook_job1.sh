@@ -25,7 +25,7 @@ main() {
             save_file=$SSD_ENTRY/$DATASET-textbook/$INSTRUCTOR/$name
             save_link=$GCP_ENTRY/$DATASET-textbook/$INSTRUCTOR/$name
             task=$QUEUE/$name.task
-            echo $load_link > $task
+            echo $load_link >> $task
             echo $load_file >> $task
             echo $save_file >> $task
             echo $save_link >> $task
