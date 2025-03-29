@@ -1,5 +1,6 @@
 /logs
-/queue
+/site
 
+/queue
 __pycache__
 devsecret.sh

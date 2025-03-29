@@ -9,8 +9,8 @@ theme:
   features:
     - content.code.copy
 
-docs_dir: wiki
-site_dir: docs
+docs_dir: docs
+site_dir: site
 
 repo_url: https://github.com/haok1402/synthetic-dataset
 repo_name: haok1402/synthetic-dataset
