@@ -5,8 +5,6 @@ Author: Zichun Yu, Hao Kang
 Date: March 22, 2025
 """
 
-import os
-import glob
 import json
 import logging
 from typing import List
@@ -14,7 +12,6 @@ from pathlib import Path
 from vllm import SamplingParams
 
 from sources import parsed, engine
-from sources.utilities import hash_file
 
 
 sampling_params = SamplingParams(
@@ -42,49 +39,28 @@ def transform(prompts: List[str]) -> List[str]:
 
 
 def main():
-    store = Path(parsed.save_into)
-    store.mkdir(mode=0o770, parents=True, exist_ok=True)
-    files = sorted(filter(os.path.isfile, glob.glob(parsed.load_from)))
-    files = [Path(path) for path in files]
+    load_file = Path(parsed.load_file)
+    save_file = Path(parsed.save_file)
 
-    for i, path in enumerate(files):
-        if path.suffix != ".jsonl":
-            raise NotImplementedError("Only 'jsonl' files are allowed.")
+    if load_file.suffix != ".jsonl":
+        raise NotImplementedError("Only 'jsonl' files are allowed.")
 
-        if i % parsed.task_count != parsed.task_id:
-            logging.info(f"Skipping {path} as it is not my responsibility.")
-            continue
+    logging.info(f"Reading the corpus from {load_file}.")
+    prompts = list()
+    with load_file.open("r") as fp:
+        for line in fp:
+            data = json.loads(line)
+            text = prompt_template.format(text=data["text"])
+            prompts.append(text)
 
-        finalPath = Path(store, path.name)
-        indexPath = Path(store, path.name + ".sha256")
-        if finalPath.exists() and indexPath.exists():
-            finalHash = hash_file(finalPath)
-            indexHash = indexPath.read_text().strip()
-            if finalHash == indexHash:
-                logging.info(f"Skipping {path} as it is already up-to-date.")
-                continue
+    logging.info("Transforming the corpus into academic, textbook style.")
+    outputs = transform(prompts)
 
-        logging.info(f"Reading the corpus from {path}.")
-        prompts = list()
-        with path.open("r") as fp:
-            for line in fp:
-                data = json.loads(line)
-                text = prompt_template.format(text=data["text"])
-                prompts.append(text)
-
-        logging.info("Transforming the corpus into academic, textbook style.")
-        outputs = transform(prompts)
-
-        logging.info(f"Saving the corpus into {finalPath}.")
-        with finalPath.open("w") as fp:
-            for text in outputs:
-                line = json.dumps({"text": text})
-                fp.write(line + "\n")
-
-        logging.info(f"Saving the sha256 into {indexPath}.")
-        indexHash = hash_file(finalPath)
-        with indexPath.open("w") as fp:
-            fp.write(indexHash)
+    logging.info(f"Saving the corpus into {save_file}.")
+    with save_file.open("w") as fp:
+        for text in outputs:
+            line = json.dumps({"text": text})
+            fp.write(line + "\n")
 
 
 if __name__ == '__main__':

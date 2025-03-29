@@ -1,0 +1,16 @@
+site_name: Synthetic Dataset
+
+nav:
+  - Overview: index.md
+  - Textbook: textbook.md
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+
+docs_dir: wiki
+site_dir: docs
+
+repo_url: https://github.com/haok1402/synthetic-dataset
+repo_name: haok1402/synthetic-dataset
