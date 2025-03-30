@@ -55,6 +55,7 @@ def main():
 
     logging.info("Transforming the corpus into academic, textbook style.")
     outputs = transform(prompts)
+    assert len(outputs) == len(prompts)
 
     logging.info(f"Saving the corpus into {save_file}.")
     with save_file.open("w") as fp:
