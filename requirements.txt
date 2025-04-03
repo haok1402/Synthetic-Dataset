@@ -1,6 +1,9 @@
 vllm
-mkdocs
-mkdocs-material
-
 --extra-index-url https://flashinfer.ai/whl/cu124/torch2.5
 flashinfer-python==0.2.2
+
+redis
+google-cloud-storage
+
+mkdocs
+mkdocs-material
