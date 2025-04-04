@@ -140,13 +140,3 @@ class Worker:
         timestamp = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime(self.redis.time()[0]))
         self.redis.hset(task_working_key, "heartbeat", timestamp)
         logger.info(f"Heartbeat for task {task_id} recorded at {timestamp}.")
-
-
-if __name__ == "__main__":
-    worker = Worker("textbook")
-    while task := worker.acquire_task():
-        task_id, task_payload = task
-        for _ in range(5):
-            time.sleep(1)
-            worker.heartbeat(task_id)
-        worker.release_task(task_id)
