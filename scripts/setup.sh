@@ -1,15 +1,10 @@
 #!/bin/bash
+# Setup the conda environment.
 
-#SBATCH --job-name=setup
-#SBATCH --output=logs/%x.log
-#SBATCH --partition=preempt
-#SBATCH --time=1:00:00
+SCRIPT=scripts/modules/setup_job1.sh
 
-#SBATCH --mem=32G
-#SBATCH --cpus-per-task=8
-#SBATCH --gres=gpu:1
-
-source ~/miniconda3/etc/profile.d/conda.sh
-conda create -n synthetic-dataset python=3.12 -y
-conda activate synthetic-dataset
-pip install -r requirements.txt
+if [[ $(hostname) == orchard-* ]]; then
+    sbatch $SCRIPT
+elif [[ $(hostname) == babel-* ]]; then
+    sbatch --partition=general --gres=gpu:A6000:1 $SCRIPT
+fi
