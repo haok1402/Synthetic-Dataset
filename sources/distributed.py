@@ -59,7 +59,8 @@ class Worker:
             task_working_key = Worker.TASK_WORKING_KEY_TEMPLATE.format(project=self.project, task_id=task_id)
             pipe.hset(task_working_key, "hostname", socket.gethostname())
             pipe.hset(task_working_key, "pid", os.getpid())
-            pipe.hset(task_working_key, "heartbeat", self.redis.time()[0])
+            timestamp = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime(self.redis.time()[0]))
+            pipe.hset(task_working_key, "heartbeat", timestamp)
             pipe.execute()
 
             logger.info(f"Successfully acquired task {task_id} from the pending queue and moved it to the working queue.")
@@ -75,8 +76,13 @@ class Worker:
 
         :param task_id: The ID of the task to be released.
         """
-        self.redis.lrem(self.working_queue_key, 1, task_id)
-        logger.info(f"Task {task_id} has been successfully released from the working queue.")
+        with self.redis.pipeline() as pipe:
+            pipe.lrem(self.working_queue_key, 1, task_id)
+            task_working_key = Worker.TASK_WORKING_KEY_TEMPLATE.format(project=self.project, task_id=task_id)
+            pipe.delete(task_working_key)
+            pipe.execute()
+
+            logger.info(f"Task {task_id} has been successfully released from the working queue.")
 
     @retry(
         wait=wait_random_exponential(multiplier=0.2, max=5),
@@ -89,8 +95,9 @@ class Worker:
         :param task_id: The ID of the task for which to update the heartbeat.
         """
         task_working_key = Worker.TASK_WORKING_KEY_TEMPLATE.format(project=self.project, task_id=task_id)
-        self.redis.hset(task_working_key, "heartbeat",  self.redis.time()[0])
-        logger.info(f"Heartbeat for task {task_id} has been successfully updated in the working record.")
+        timestamp = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime(self.redis.time()[0]))
+        self.redis.hset(task_working_key, "heartbeat", timestamp)
+        logger.info(f"Heartbeat for task {task_id} has been successfully recoreded.")
 
 if __name__ == "__main__":
     import time
