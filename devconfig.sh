@@ -9,4 +9,4 @@ export SSD_ENTRY=$SSD_MOUNT/synthetic-dataset
 export GCP_ENTRY=$GCP_MOUNT/MoE-Research/dataset
 
 source ~/miniconda3/etc/profile.d/conda.sh
-conda activate synthetic
+conda activate synthetic-dataset

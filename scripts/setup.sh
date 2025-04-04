@@ -10,5 +10,6 @@
 #SBATCH --gres=gpu:1
 
 source ~/miniconda3/etc/profile.d/conda.sh
+conda create -n synthetic-dataset python=3.12 -y
 conda activate synthetic-dataset
 pip install -r requirements.txt

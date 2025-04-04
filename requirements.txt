@@ -3,6 +3,7 @@ vllm
 flashinfer-python==0.2.2
 
 redis
+tenacity
 google-cloud-storage
 
 mkdocs
