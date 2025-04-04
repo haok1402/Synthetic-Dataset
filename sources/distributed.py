@@ -24,10 +24,11 @@ class Worker:
     Worker class to manage tasks in a Redis-backed task queue.
 
     Responsibilities:
-    - Fetch a task from a pending queue.
-    - Move it to a working queue with associated metadata.
-    - Periodically send heartbeat signals to indicate activity.
-    - Release completed tasks by removing them from queues and Redis keys.
+    - Enqueue tasks into the pending queue with associated payload data.
+    - Fetch a task from the pending queue.
+    - Move a task to the working queue with metadata (e.g., hostname, PID, heartbeat).
+    - Periodically send heartbeat signals to indicate task activity and progress.
+    - Release completed or failed tasks by removing them from queues and deleting associated Redis keys.
     """
 
     PENDING_QUEUE_KEY_TEMPLATE = "{project}:queue:pending"
