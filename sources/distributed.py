@@ -29,6 +29,22 @@ class Worker:
 
     @retry(
         wait=wait_random_exponential(multiplier=0.2, max=5),
+        retry=retry_if_exception_type(redis.exceptions.ConnectionError),
+    )
+    def enqueue_task(self, task_id: str, payload: Dict[str, str]) -> None:
+        """
+        Enqueue a task into the pending queue.
+
+        :param task_id: The ID of the task to be enqueued.
+        :param payload: A dictionary containing the task's payload.
+        """
+        task_pending_key = Worker.TASK_PENDING_KEY_TEMPALTE.format(project=self.project, task_id=task_id)
+        self.redis.hset(task_pending_key, mapping=payload)
+        self.redis.rpush(self.pending_queue_key, task_id)
+        logger.info(f"Task {task_id} has been successfully enqueued into the pending queue.")
+
+    @retry(
+        wait=wait_random_exponential(multiplier=0.2, max=5),
         retry=retry_if_exception_type((redis.exceptions.WatchError, redis.exceptions.ConnectionError)),
     )
     def acquire_task(self) -> Optional[Tuple[str, Dict[str, str]]]:
