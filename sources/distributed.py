@@ -80,9 +80,10 @@ class Worker:
             pipe.lrem(self.working_queue_key, 1, task_id)
             task_working_key = Worker.TASK_WORKING_KEY_TEMPLATE.format(project=self.project, task_id=task_id)
             pipe.delete(task_working_key)
+            task_pending_key = Worker.TASK_PENDING_KEY_TEMPALTE.format(project=self.project, task_id=task_id)
+            pipe.delete(task_pending_key)
             pipe.execute()
-
-            logger.info(f"Task {task_id} has been successfully released from the working queue.")
+            logger.info(f"Task {task_id} has been successfully released.")
 
     @retry(
         wait=wait_random_exponential(multiplier=0.2, max=5),
