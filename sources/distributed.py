@@ -30,10 +30,10 @@ class Worker:
     - Release completed tasks by removing them from queues and Redis keys.
     """
 
-    PENDING_QUEUE_KEY_TEMPLATE = "synthetic-dataset:{project}:queue:pending"
-    WORKING_QUEUE_KEY_TEMPLATE = "synthetic-dataset:{project}:queue:working"
-    TASK_PENDING_KEY_TEMPLATE = "synthetic-dataset:{project}:pending:{task_id}"
-    TASK_WORKING_KEY_TEMPLATE = "synthetic-dataset:{project}:working:{task_id}"
+    PENDING_QUEUE_KEY_TEMPLATE = "{project}:queue:pending"
+    WORKING_QUEUE_KEY_TEMPLATE = "{project}:queue:working"
+    TASK_PENDING_KEY_TEMPLATE = "{project}:pending:{task_id}"
+    TASK_WORKING_KEY_TEMPLATE = "{project}:working:{task_id}"
 
     def __init__(self, project: str):
         """
@@ -47,6 +47,8 @@ class Worker:
         self.redis = redis.Redis(
             host=os.environ.get("REDIS_HOST", "localhost"),
             port=int(os.environ.get("REDIS_PORT", 6379)),
+            db=int(os.environ.get("REDIS_DB", 0)),
+            username=os.environ.get("REDIS_USERNAME", None),
             password=os.environ.get("REDIS_PASSWORD", None),
             decode_responses=True,
         )
