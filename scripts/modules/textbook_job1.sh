@@ -1,36 +1,18 @@
 #!/bin/bash
 
-# Author: Hao Kang
-# Date: May 29, 2025
-
 #SBATCH --job-name=textbook
-#SBATCH --output=logs/%x-%j.log
-#SBATCH --time=2-00:00:00
+#SBATCH --output=logs/%x.log
+#SBATCH --time=4:00:00
 #SBATCH --partition=preempt
 
-main() {
-    source devconfig.sh
-    source devsecret.sh
+#SBATCH --mem=32G
+#SBATCH --cpus-per-task=8
 
-    export QUEUE=$NFS_MOUNT/queue/$DATASET-textbook/$INSTRUCTOR/
-    echo "Queue: $QUEUE"
+source devconfig.sh
+source devsecret.sh
 
-    if [ -d $QUEUE ]; then
-        find $QUEUE -type f -name "*.task" -empty -delete
-    else
-        mkdir -p $QUEUE
-        gcloud storage ls $GCP_ENTRY/$DATASET/textfiles/ | while read -r load_link; do
-            name=$(basename $load_link)
-            load_file=$SSD_ENTRY/$DATASET/textfiles/$name
-            save_file=$SSD_ENTRY/$DATASET-textbook/$INSTRUCTOR/$name
-            save_link=$GCP_ENTRY/$DATASET-textbook/$INSTRUCTOR/$name
-            task=$QUEUE/$name.task
-            echo $load_link >> $task
-            echo $load_file >> $task
-            echo $save_file >> $task
-            echo $save_link >> $task
-        done
-    fi
-}
-
-main
+python3 -m sources.textbook.populate \
+    --bucket $GCP_BUCKET \
+    --read-prefix $GCP_PREFIX/$DATASET/textfiles \
+    --instructor $INSTRUCTOR \
+    --save-prefix $GCP_PREFIX/$DATASET-textbook/$INSTRUCTOR/textfiles
