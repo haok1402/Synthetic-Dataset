@@ -9,5 +9,5 @@ This pipeline transforms a corpus into an academic, textbook-style format, gener
 ```bash
 export DATASET=dclm28b
 export INSTRUCTOR=mistralai/Mistral-7B-Instruct-v0.2
-bash scripts/textbook.sh
+sbatch scripts/modules/textbook_job1.sh
 ```
