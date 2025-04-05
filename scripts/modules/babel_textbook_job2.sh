@@ -14,4 +14,4 @@
 source devconfig.sh
 source devsecret.sh
 
-srun python3 -m sources.textbook.dispatch
+srun -W 0 scripts/modules/textbook_job2_step1.sh
