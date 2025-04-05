@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name=textbook
-#SBATCH --output=logs/%x.log
+#SBATCH --output=logs/%x/prepare.log
 #SBATCH --time=4:00:00
 #SBATCH --partition=preempt
 
