@@ -1,7 +1,7 @@
 import json
 import time
 from typing import List
-from vllm import LLM, TokensPrompt, SamplingParams, RequestOutput
+from vllm import LLM, TokensPrompt, SamplingParams
 from sources.textbook import store, queue
 
 sampling_params = SamplingParams(
