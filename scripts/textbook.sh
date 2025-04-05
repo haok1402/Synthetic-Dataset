@@ -6,5 +6,5 @@ SCRIPT=scripts/modules/textbook_job2.sh
 if [[ $(hostname) == orchard-* ]]; then
     sbatch $SCRIPT
 elif [[ $(hostname) == babel-* ]]; then
-    sbatch --partition=general --gres=gpu:A6000:1 $SCRIPT
+    sbatch --partition=general --gres=gpu:A6000:2 $SCRIPT
 fi

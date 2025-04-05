@@ -15,5 +15,5 @@ sbatch scripts/modules/textbook_job1.sh
 ```bash
 export DATASET=dclm28b
 export MODEL=mistralai/Mistral-7B-Instruct-v0.2
-sbatch scripts/modules/textbook.sh
+bash scripts/textbook.sh
 ```
