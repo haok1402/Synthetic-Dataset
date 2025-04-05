@@ -1,9 +1,9 @@
 import logging
 
 handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
+fmt = "%(asctime)s | %(levelname)s | %(message)s"
+formatter = logging.Formatter(fmt)
 handler.setFormatter(formatter)
-
-logger = logging.getLogger("synthetic-dataset")
-logger.setLevel(logging.INFO)
+logger = logging.getLogger("dataset")
 logger.addHandler(handler)
+logger.setLevel(logging.INFO)
