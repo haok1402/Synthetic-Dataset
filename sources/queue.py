@@ -6,7 +6,12 @@ from typing import Union, Optional
 import redis
 from sources import logger
 
+
 class Queue:
+    """
+    A Redis-backed task queue for distributed task management.
+    Supports task creation, acquisition, metric updates, and releasing.
+    """
 
     LISTING_TEMPLATE = "{topic}:listing:{tid}"
     METRICS_TEMPLATE = "{topic}:metrics:{tid}"
@@ -14,6 +19,11 @@ class Queue:
     WORKING_TASKS_TEMPLATE = "{topic}:working"
 
     def __init__(self, topic: str):
+        """
+        Initialize a Queue instance for a specific topic.
+
+        :param topic: The namespace/topic for the queue to isolate tasks.
+        """
         self.topic = topic
         self.pending_tasks = Queue.PENDING_TASKS_TEMPLATE.format(topic=topic)
         self.working_tasks = Queue.WORKING_TASKS_TEMPLATE.format(topic=topic)
@@ -35,6 +45,12 @@ class Queue:
             raise Exception("Could not connect to Redis server. Please check your connection settings.")
 
     def create(self, params: dict) -> str:
+        """
+        Create a new task with the given parameters.
+
+        :param params: Task parameters to store in Redis.
+        :return: A unique task ID (tid).
+        """
         tid = secrets.token_hex(8)
         listing = Queue.LISTING_TEMPLATE.format(topic=self.topic, tid=tid)
         with self.redis.pipeline() as pipe:
@@ -45,6 +61,11 @@ class Queue:
         return tid
 
     def acquire(self) -> Optional[Union[str, dict]]:
+        """
+        Acquire the next pending task atomically and mark it as working.
+
+        :return: A tuple of (task ID, task parameters) if a task is available, else None.
+        """
         with self.redis.pipeline() as pipe:
             while True:
                 try:
@@ -54,15 +75,18 @@ class Queue:
                         logger.info(f"No pending tasks in topic '{self.topic}'.")
                         pipe.unwatch()
                         return None
+
                     listing = Queue.LISTING_TEMPLATE.format(topic=self.topic, tid=tid)
                     params = self.redis.hgetall(listing)
                     if not params:
                         logger.error(f"Task {tid} in topic '{self.topic}' has no parameters.")
                         pipe.unwatch()
                         continue
+
                     pipe.multi()
                     pipe.lpop(self.pending_tasks)
                     pipe.sadd(self.working_tasks, tid)
+
                     metrics = Queue.METRICS_TEMPLATE.format(topic=self.topic, tid=tid)
                     timestamp = self.redis.time()[0]
                     pipe.hset(metrics, "heartbeat", timestamp)
@@ -70,12 +94,19 @@ class Queue:
                     pipe.hset(metrics, "hostname", socket.gethostname())
                     pipe.hset(metrics, "pid", os.getpid())
                     pipe.execute()
+
                     logger.info(f"Acquired task {tid} from topic '{self.topic}'.")
                     return tid, params
                 except redis.WatchError:
                     continue
 
     def update(self, tid: str, records: dict) -> None:
+        """
+        Update metrics or other records for a given task.
+
+        :param tid: Task ID to update.
+        :param records: Dictionary of records to update in metrics.
+        """
         with self.redis.pipeline() as pipe:
             metrics = Queue.METRICS_TEMPLATE.format(topic=self.topic, tid=tid)
             timestamp = self.redis.time()[0]
@@ -86,6 +117,11 @@ class Queue:
             logger.info(f"Updated task {tid} in topic '{self.topic}' with records.")
 
     def release(self, tid: str) -> None:
+        """
+        Release a task from the working set (typically after completion).
+
+        :param tid: Task ID to release.
+        """
         with self.redis.pipeline() as pipe:
             while True:
                 try:
@@ -93,12 +129,14 @@ class Queue:
                     if not self.redis.sismember(self.working_tasks, tid):
                         logger.error(f"Task {tid} is not in working tasks for topic '{self.topic}'.")
                         return
+
                     pipe.multi()
                     pipe.srem(self.working_tasks, tid)
                     metrics = Queue.METRICS_TEMPLATE.format(topic=self.topic, tid=tid)
                     timestamp = self.redis.time()[0]
                     pipe.hset(metrics, "last-released", timestamp)
                     pipe.execute()
+
                     logger.info(f"Released task {tid} from topic '{self.topic}'.")
                     return
                 except redis.WatchError:
