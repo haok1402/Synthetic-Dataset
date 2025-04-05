@@ -1,6 +1,4 @@
-import os
 import argparse
-import redis
 from sources import logger
 from sources.queue import Queue
 
