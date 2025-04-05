@@ -114,7 +114,6 @@ class Queue:
             for key, val in records.items():
                 pipe.hset(metrics, key, val)
             pipe.execute()
-            logger.info(f"Recorded metrics for task {tid} in topic '{self.topic}': {records}.")
 
     def release(self, tid: str) -> None:
         """
@@ -141,3 +140,34 @@ class Queue:
                     return
                 except redis.WatchError:
                     continue
+
+    def cleanup(self, timeout: int = 900) -> None:
+        """
+        Cleanup any stale tasks in the working set or pending list.
+        This can be called periodically to ensure no orphaned tasks remain.
+
+        :param timeout: Time in seconds to consider a task stale (default: 15 minutes).
+        """
+        with self.redis.pipeline() as pipe:
+            while True:
+                try:
+                    pipe.watch(self.working_tasks)
+                    pipe.multi()
+                    for tid in self.redis.smembers(self.working_tasks):
+                        timestamp = self.redis.time()[0]
+                        metrics = Queue.METRICS_TEMPLATE.format(topic=self.topic, tid=tid)
+                        heartbeat = self.redis.hget(metrics, "heartbeat")
+                        duration = timestamp - int(heartbeat)
+                        if duration > timeout:
+                            logger.warning(f"Task {tid} in topic '{self.topic}' is stale for {duration} seconds. Requeueuing...")
+                            pipe.srem(self.working_tasks, tid)
+                            pipe.rpush(self.pending_tasks, tid)
+                    pipe.execute()
+                    return
+                except redis.WatchError:
+                    continue
+
+
+if __name__ == "__main__":
+    queue = Queue("textbook")
+    queue.cleanup()
