@@ -53,7 +53,7 @@ def main():
         # Process the corpus in batches and save the results
         batch_size = 64
         with store.blob(params["save-into"]).open("w") as fp2:
-            for i in tqdm(range(0, len(corpus), batch_size), mininterval=8):
+            for i in tqdm(range(0, len(corpus), batch_size), mininterval=8, desc="Processing batches"):
                 batch = corpus[i:i + batch_size]
                 for text in transform(tid, engine, batch):
                     fp2.write(json.dumps({"text": text}) + "\n")
