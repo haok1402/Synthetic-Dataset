@@ -1,6 +1,7 @@
 import json
 import time
 from typing import List
+from tqdm import tqdm
 from vllm import LLM, TokensPrompt, SamplingParams
 from sources.textbook import store, queue
 
@@ -51,7 +52,7 @@ def main():
         # Process the corpus in batches and save the results
         batch_size = 64
         with store.blob(params["save-into"]).open("w") as fp2:
-            for i in range(0, len(corpus), batch_size):
+            for i in tqdm(range(0, len(corpus), batch_size), mininterval=8):
                 batch = corpus[i:i + batch_size]
                 for text in transform(tid, engine, batch):
                     fp2.write(json.dumps({"text": text}) + "\n")
