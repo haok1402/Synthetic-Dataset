@@ -6,7 +6,7 @@
 #SBATCH --partition=preempt
 
 #SBATCH --ntasks=2
-#SBATCH --array=0-31%8
+#SBATCH --array=0-31
 #SBATCH --ntasks=2
 #SBATCH --cpus-per-task=24
 #SBATCH --gres=gpu:2

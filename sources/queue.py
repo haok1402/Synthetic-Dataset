@@ -114,7 +114,7 @@ class Queue:
             for key, val in records.items():
                 pipe.hset(metrics, key, val)
             pipe.execute()
-            logger.info(f"Updated task {tid} in topic '{self.topic}' with records.")
+            logger.info(f"Updated task {tid} in topic '{self.topic}' with records: {records}.")
 
     def release(self, tid: str) -> None:
         """
