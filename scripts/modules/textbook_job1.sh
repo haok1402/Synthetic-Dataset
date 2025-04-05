@@ -14,5 +14,4 @@ source devsecret.sh
 python3 -m sources.textbook.populate \
     --bucket $GCP_BUCKET \
     --read-prefix $GCP_PREFIX/$DATASET/textfiles \
-    --instructor $INSTRUCTOR \
     --save-prefix $GCP_PREFIX/$DATASET-textbook/$INSTRUCTOR/textfiles
