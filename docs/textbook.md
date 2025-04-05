@@ -8,6 +8,12 @@ This pipeline transforms a corpus into an academic, textbook-style format, gener
 
 ```bash
 export DATASET=dclm28b
-export INSTRUCTOR=mistralai/Mistral-7B-Instruct-v0.2
+export MODEL=mistralai/Mistral-7B-Instruct-v0.2
 sbatch scripts/modules/textbook_job1.sh
+```
+
+```bash
+export DATASET=dclm28b
+export MODEL=mistralai/Mistral-7B-Instruct-v0.2
+sbatch scripts/modules/textbook.sh
 ```
