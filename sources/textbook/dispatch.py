@@ -40,6 +40,7 @@ def transform(tid: str, engine: LLM, batch: List[str]) -> List[str]:
     return [item.outputs[0].text for item in outputs]
 
 def main():
+    queue.cleanup()
     while task := queue.acquire():
         tid, params = task
         engine = LLM(model=params["model"], task="generate")
@@ -56,7 +57,9 @@ def main():
                 batch = corpus[i:i + batch_size]
                 for text in transform(tid, engine, batch):
                     fp2.write(json.dumps({"text": text}) + "\n")
+        # Report completion and cleanup any stale tasks
         queue.release(tid)
+        queue.cleanup()
 
 if __name__ == "__main__":
     main()
